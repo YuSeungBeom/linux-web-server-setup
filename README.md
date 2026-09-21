@@ -65,3 +65,10 @@ VMware 환경의 Ubuntu 서버에서 Nginx 웹 서버를 설치하고 가상 호
 - Firefox에서 `site1.example.com`, `site2.example.com` 접속 후 HTTP 상태 코드 `200` 확인
 - `/var/log/nginx/error.log`에서 최근 오류 여부 확인
 - `systemctl status nginx`로 Nginx 서비스 실행 상태 확인
+
+## Nginx 로그 확인
+
+- `/var/log/nginx/access.log`에서 Firefox 접속 로그 확인
+- 첫 접속 시 `200 OK` 확인
+- 새로고침 시 `304 Not Modified` 확인
+- `304`는 페이지가 변경되지 않아 브라우저 캐시를 사용하는 정상 응답
