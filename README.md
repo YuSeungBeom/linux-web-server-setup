@@ -56,3 +56,12 @@ VMware 환경의 Ubuntu 서버에서 Nginx 웹 서버를 설치하고 가상 호
 ### 확인 결과
 - UFW 활성 상태에서 `http://site1.example.com` 접속 성공
 - 허용된 서비스: SSH(22/tcp), HTTP(80/tcp)
+
+
+## 2026-09-21 업데이트 - Nginx 운영 로그 확인
+
+### 확인 내용
+- `/var/log/nginx/access.log`에서 사이트 접속 요청 확인
+- Firefox에서 `site1.example.com`, `site2.example.com` 접속 후 HTTP 상태 코드 `200` 확인
+- `/var/log/nginx/error.log`에서 최근 오류 여부 확인
+- `systemctl status nginx`로 Nginx 서비스 실행 상태 확인
