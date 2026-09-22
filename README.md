@@ -16,7 +16,7 @@ VirtualBox 환경의 Ubuntu 서버에서 Nginx 웹 서버를 설치하고 가상
 - 'Firefox에서 각 가상 호스트 접속 확인
 
 ### 환경
-- VMware
+- VirtualBox
 - Ubuntu Linux
 - Nginx
 - Firefox
@@ -108,3 +108,101 @@ ssh vboxuser@127.0.0.1 -p 2222
 - 개인키(`id_ed25519`)는 Windows PC에만 보관
 - 공개키(`id_ed25519.pub`)만 Ubuntu 서버에 등록
 - 개인키와 서버 비밀번호는 GitHub에 업로드하지 않음
+
+## 2026-09-22 업데이트 - SSH 비밀번호 인증 비활성화 완료
+
+### 구현 내용
+- SSH 공개키 인증을 유지한 상태에서 비밀번호 기반 SSH 로그인을 비활성화
+- 키보드 대화형(Keyboard-Interactive) 인증도 비활성화
+- SSH 설정을 별도 Drop-in 설정 파일로 관리
+- SSH 설정 문법 검사 후 서비스를 재시작하여 변경 사항 적용
+- Windows PowerShell에서 공개키 로그인 및 비밀번호 인증 차단 테스트 완료
+
+### SSH 보안 설정 파일
+
+설정 파일:
+
+```text
+/etc/ssh/sshd_config.d/01-key-only.conf
+```
+
+설정 내용:
+
+```text
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+```
+
+- `PubkeyAuthentication yes`: 등록된 SSH 공개키를 이용한 인증 허용
+- `PasswordAuthentication no`: 계정 비밀번호를 사용하는 SSH 인증 차단
+- `KbdInteractiveAuthentication no`: 키보드 대화형 인증 경로 차단
+
+Ubuntu에서는 `/etc/ssh/sshd_config.d/` 디렉터리의 Drop-in 설정 파일을 통해 SSH 설정을 분리하여 관리할 수 있다. 기존 기본 설정을 직접 수정하는 대신 별도 설정 파일을 사용해 키 기반 인증 정책을 적용하였다.
+
+### 설정 적용
+
+설정 파일 작성 후 문법 오류를 먼저 검사하였다.
+
+```bash
+sudo sshd -t
+```
+
+출력이 없으면 SSH 설정 문법에 문제가 없음을 의미한다.
+
+문법 검사 후 SSH 서비스를 재시작하여 설정을 반영하였다.
+
+```bash
+sudo systemctl restart ssh
+```
+
+### 실제 적용 설정 확인
+
+`sshd -T` 명령으로 현재 SSH 데몬에 실제 적용된 설정값을 확인하였다.
+
+```bash
+sudo sshd -T | grep -E 'passwordauthentication|pubkeyauthentication|kbdinteractiveauthentication'
+```
+
+확인 결과:
+
+```text
+pubkeyauthentication yes
+passwordauthentication no
+kbdinteractiveauthentication no
+```
+
+### SSH 접속 및 차단 테스트
+
+Windows PowerShell에서 SSH 키 기반 접속을 확인하였다.
+
+```powershell
+ssh vboxuser@127.0.0.1 -p 2222
+```
+
+키 기반 로그인 성공 후, 비밀번호 인증만 사용하도록 강제하여 비밀번호 로그인이 차단되는지 확인하였다.
+
+```powershell
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no vboxuser@127.0.0.1 -p 2222
+```
+
+다음과 같은 결과가 출력되면 비밀번호 인증 차단이 정상적으로 적용된 것이다.
+
+```text
+vboxuser@127.0.0.1: Permission denied (publickey).
+```
+
+`Permission denied (publickey)` 메시지는 오류가 아니라, 서버가 비밀번호 인증 요청을 거부하고 공개키 인증만 허용한다는 의미이다.
+
+### 최종 SSH 보안 구성
+
+| 항목 | 설정 상태 |
+|---|---|
+| SSH 서비스 포트 | Ubuntu VM `22/tcp` |
+| Windows 접속 주소 | `127.0.0.1:2222` |
+| VirtualBox NAT 포트 포워딩 | Host `2222` → Guest `22` |
+| 공개키 인증 | 활성화 |
+| 비밀번호 인증 | 비활성화 |
+| 키보드 대화형 인증 | 비활성화 |
+| 개인키 보관 위치 | Windows 호스트 PC |
+| 서버에 저장되는 키 | 공개키만 저장 |
