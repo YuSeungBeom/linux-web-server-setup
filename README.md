@@ -1,6 +1,6 @@
 # Linux 웹 서버 구축 및 운영
 
-VMware 환경의 Ubuntu 서버에서 Nginx 웹 서버를 설치하고 가상 호스트를 구성하여 여러 웹 사이트를 운영하는 실습 프로젝트입니다.
+VirtualBox 환경의 Ubuntu 서버에서 Nginx 웹 서버를 설치하고 가상 호스트를 구성하여 여러 웹 사이트를 운영하는 실습 프로젝트입니다.
 
 ## 2026-09-21 업데이트 - Nginx 가상 호스트 설정 완료
 
@@ -72,3 +72,25 @@ VMware 환경의 Ubuntu 서버에서 Nginx 웹 서버를 설치하고 가상 호
 - 첫 접속 시 `200 OK` 확인
 - 새로고침 시 `304 Not Modified` 확인
 - `304`는 페이지가 변경되지 않아 브라우저 캐시를 사용하는 정상 응답
+
+## 2026-09-22 업데이트 - SSH 원격 접속 설정 완료
+
+### 구현 내용
+- Ubuntu VM의 OpenSSH Server 서비스 실행 상태 확인
+- UFW에서 `OpenSSH` 규칙을 통해 SSH 포트(`22/tcp`) 허용
+- VirtualBox NAT 환경에서 SSH 포트 포워딩 설정
+  - Host Port: `2222`
+  - Guest Port: `22`
+- Windows PowerShell에서 Ubuntu VM 원격 SSH 접속 성공
+
+### SSH 접속 명령어
+```powershell
+ssh vboxuser@127.0.0.1 -p 2222
+```
+
+> `사용자명`에는 Ubuntu 터미널에서 `whoami` 명령으로 확인한 실제 계정명을 입력합니다.
+
+### 접속 확인
+- 원격 SSH 세션에서 `whoami` 명령으로 로그인 계정 확인
+- `hostname` 명령으로 접속 대상 Ubuntu 서버 확인
+- `pwd` 명령으로 현재 작업 디렉터리 확인
