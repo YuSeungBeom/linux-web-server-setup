@@ -94,3 +94,17 @@ ssh vboxuser@127.0.0.1 -p 2222
 - 원격 SSH 세션에서 `whoami` 명령으로 로그인 계정 확인
 - `hostname` 명령으로 접속 대상 Ubuntu 서버 확인
 - `pwd` 명령으로 현재 작업 디렉터리 확인
+
+## 2026-09-22 - SSH 키 기반 인증 설정
+
+### 구현 내용
+- Windows PowerShell에서 ED25519 SSH 키 쌍 생성
+- 공개키를 Ubuntu 서버의 `~/.ssh/authorized_keys`에 등록
+- `.ssh` 디렉터리 권한 `700`, `authorized_keys` 파일 권한 `600` 적용
+- Windows 개인키를 사용한 SSH 접속 성공 확인
+- Ubuntu 계정 비밀번호 입력 없이 키 기반으로 원격 접속 확인
+
+### 보안 원칙
+- 개인키(`id_ed25519`)는 Windows PC에만 보관
+- 공개키(`id_ed25519.pub`)만 Ubuntu 서버에 등록
+- 개인키와 서버 비밀번호는 GitHub에 업로드하지 않음
